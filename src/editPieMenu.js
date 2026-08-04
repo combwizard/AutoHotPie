@@ -1698,7 +1698,7 @@ var editPieMenu = {
                     function runParameterSelection(pieFunc){
                         switch (pieFunc){
                             case "sendKey":
-                                assignKey().then(val => {                            
+                                assignKey({ captureMode: "sendKey" }).then(val => {                            
                                     editPieMenu.selectedSlice.params.keys[0] = val.ahkKey    
                                     let textLabel = editPieMenu.selectedSlice.label                                
                                     if (textLabel.includes("New Slice") || textLabel == ""){                                        
@@ -1848,7 +1848,7 @@ var editPieMenu = {
                         selKeyObj.keys.splice(keyIndex,1)
                         editPieMenu.sliceSettings.loadSelectedPieKey();
                     }else if(target.name.split("-")[3]=="add"){
-                        assignKey().then(val => { 
+                        assignKey({ captureMode: "sendKey" }).then(val => { 
                             selKeyObj.keys.push(val.ahkKey)                            
                             $('[href="#tab-2"]').tab('show');
                             // editPieMenu.sliceSettings.sliceFunction.sendKey.keysDiv.scrollIntoView({behavior:"smooth"});
@@ -1859,7 +1859,7 @@ var editPieMenu = {
                         });
                     }else{
                         // console.log(getKeyObjFromAhkString(selKeyObj.keys[keyIndex]))
-                        assignKey().then(val => {                            
+                        assignKey({ captureMode: "sendKey" }).then(val => {                            
                             selKeyObj.keys[keyIndex] = val.ahkKey                            
                             $('[href="#tab-2"]').tab('show');
                             // editPieMenu.sliceSettings.sliceFunction.sendKey.keysDiv.scrollIntoView({behavior:"smooth"});
