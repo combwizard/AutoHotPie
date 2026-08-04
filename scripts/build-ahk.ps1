@@ -32,8 +32,15 @@ $list
 "@
 }
 
-$ahk2exe = Resolve-FirstExisting $toolchain.ahk2exeCandidates "Ahk2Exe.exe"
-$bin = Resolve-FirstExisting $toolchain.binCandidates "Unicode 64-bit.bin"
+$ahk2exeCandidates = @()
+$binCandidates = @()
+if ($env:AHK2EXE_PATH) { $ahk2exeCandidates += $env:AHK2EXE_PATH }
+if ($env:AHK_BIN_PATH) { $binCandidates += $env:AHK_BIN_PATH }
+$ahk2exeCandidates += $toolchain.ahk2exeCandidates
+$binCandidates += $toolchain.binCandidates
+
+$ahk2exe = Resolve-FirstExisting $ahk2exeCandidates "Ahk2Exe.exe"
+$bin = Resolve-FirstExisting $binCandidates "Unicode 64-bit.bin"
 $inputPath = Join-Path $repoRoot $toolchain.input
 $outputPath = Join-Path $repoRoot $toolchain.output
 $iconPath = Join-Path $repoRoot $toolchain.icon
@@ -50,13 +57,23 @@ Write-Host "  Bin:     $bin"
 Write-Host "  Input:   $inputPath"
 Write-Host "  Output:  $outputPath"
 
-& $ahk2exe /in $inputPath /out $outputPath /icon $iconPath /bin $bin
-if ($LASTEXITCODE -ne 0) {
-    throw "Ahk2Exe failed with exit code $LASTEXITCODE"
+if (Test-Path $outputPath) {
+    Remove-Item -Force $outputPath
+}
+
+$compile = Start-Process -FilePath $ahk2exe -ArgumentList @(
+    "/in", $inputPath,
+    "/out", $outputPath,
+    "/icon", $iconPath,
+    "/bin", $bin
+) -Wait -PassThru -NoNewWindow
+
+if ($compile.ExitCode -and $compile.ExitCode -ne 0) {
+    throw "Ahk2Exe failed with exit code $($compile.ExitCode)"
 }
 
 if (-not (Test-Path $outputPath)) {
-    throw "Compile reported success but output is missing: $outputPath"
+    throw "Ahk2Exe did not produce output: $outputPath"
 }
 
 Write-Host "Built $outputPath"

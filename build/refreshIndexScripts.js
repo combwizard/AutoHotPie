@@ -8,7 +8,7 @@ const priorityFolders = ['lib', 'classes', 'autohotpie', 'pages', 'domain', 'ser
 const endFiles = ['initializePages.js'];
 
 function getRendererScripts(dir, fileList = []) {
-    const files = fs.readdirSync(dir);
+    const files = fs.readdirSync(dir).slice().sort((a, b) => a.localeCompare(b));
 
     priorityFolders.forEach(folder => {
         const folderPath = path.join(dir, folder);
@@ -44,6 +44,10 @@ function getRendererScripts(dir, fileList = []) {
     fileList.push(...endFileList);
 
     return fileList;
+}
+
+function normalizeEol(text) {
+    return String(text).replace(/\r\n/g, '\n');
 }
 
 function toHtmlScriptPaths(scriptFiles) {
@@ -100,7 +104,7 @@ function main(argv = process.argv.slice(2)) {
     const current = fs.readFileSync(htmlPath, 'utf8');
 
     if (checkOnly) {
-        if (current !== updated) {
+        if (normalizeEol(current) !== normalizeEol(updated)) {
             console.error('src/index.html script block is out of date. Run: npm run refresh-index-scripts');
             process.exit(1);
         }
@@ -108,7 +112,7 @@ function main(argv = process.argv.slice(2)) {
         return;
     }
 
-    fs.writeFileSync(htmlPath, updated, 'utf8');
+    fs.writeFileSync(htmlPath, normalizeEol(updated), 'utf8');
     console.log('Updated renderer scripts in src/index.html');
 }
 
@@ -118,6 +122,7 @@ module.exports = {
     buildIncludeString,
     applyScriptBlock,
     computeUpdatedIndexHtml,
+    normalizeEol,
     main,
 };
 

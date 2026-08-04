@@ -3,6 +3,7 @@ const {
   buildIncludeString,
   applyScriptBlock,
   toHtmlScriptPaths,
+  normalizeEol,
 } = require("../../build/refreshIndexScripts");
 
 describe("refreshIndexScripts", () => {
@@ -24,5 +25,9 @@ describe("refreshIndexScripts", () => {
     const next = applyScriptBlock(html, '<script src="./a.js"></script>\n');
     expect(next).toContain('<!-- UPDATED ON COMPILE -->\n<script src="./a.js"></script>\n<!-- END OF UPDATED ON COMPILE -->');
     expect(next).toContain("tail");
+  });
+
+  it("treats CRLF and LF as equal for verify checks", () => {
+    expect(normalizeEol("a\r\nb\r\n")).toBe("a\nb\n");
   });
 });
