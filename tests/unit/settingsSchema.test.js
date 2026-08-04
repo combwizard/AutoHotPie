@@ -25,6 +25,14 @@ describe("AHPSettings schema", () => {
     expect(validate(loadFixture("single-pie-sendkey.json"))).toBe(true);
   });
 
+  it("accepts non-qwerty-sendkey fixture", () => {
+    expect(validate(loadFixture("non-qwerty-sendkey.json"))).toBe(true);
+  });
+
+  it("accepts modifier-chord-pie-key fixture", () => {
+    expect(validate(loadFixture("modifier-chord-pie-key.json"))).toBe(true);
+  });
+
   it("accepts custom-function fixture", () => {
     expect(validate(loadFixture("custom-function.json"))).toBe(true);
   });

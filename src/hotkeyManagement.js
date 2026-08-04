@@ -128,12 +128,11 @@ function processHotkeyInputEvent(event){
         keyNumber = event.keyCode        
     } 
     
-    // console.log(keyNumber)
-    // console.log(event.code)
-    
-    // hotkeyManagement.hotkeyObj = processHotkey(event)
-    let allowModifiers = (hotkeyManagement.editKeyPage.modBtnGroup.style.display == "block") ? true : false;    
-    hotkeyManagement.hotkeyObj = new Hotkey(event,allowModifiers);
+    let allowModifiers = (hotkeyManagement.editKeyPage.modBtnGroup.style.display == "block") ? true : false;
+    hotkeyManagement.hotkeyObj = new Hotkey(event, {
+        allowModifiers: allowModifiers,
+        captureMode: hotkeyManagement.captureMode || "default",
+    });
     
     
     hm.editKeyPage.hotkeyAcceptBtn.focus();
@@ -149,7 +148,8 @@ async function assignKey(options){
     var defaults = {
         allowModifiers:true,
         allowScrollInputs:false,
-        invalidAHKKeys:[],   
+        invalidAHKKeys:[],
+        captureMode: "default",
         warningText:"This key is already in use, edit or choose another key."
     }     
     
@@ -159,6 +159,7 @@ async function assignKey(options){
     }
     
     let hm = hotkeyManagement;
+    hotkeyManagement.captureMode = setting.captureMode || "default";
     hotkeyManagement.invalidAHKKeys = setting.invalidAHKKeys;
     hotkeyManagement.invalidKeyCodes = [];    
     setting.invalidAHKKeys.forEach( (key) => {        

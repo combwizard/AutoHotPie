@@ -1909,58 +1909,84 @@ class PieFunction {
 }
 
 class Hotkey {
-    constructor(_keyObj,allowModifiers=true){        
-        // let keyTableArray = AutoHotPieSettings.global.htmlAhkKeyConversionTable;
-        if (typeof _keyObj == "string"){            
-            
-            let ahkBareKey = _keyObj.replace('+','').replace('!','').replace('^','').replace('#','')
-            let keyListObj = AutoHotPieSettings.global.htmlAhkKeyConversionTable.find(x => x.ahkKey === ahkBareKey)
+    constructor(_keyObj, allowModifiersOrOptions = true, maybeOptions) {
+        let allowModifiers = true;
+        let options = {};
+        if (typeof allowModifiersOrOptions === "boolean") {
+            allowModifiers = allowModifiersOrOptions;
+            options = maybeOptions || {};
+        } else if (
+            allowModifiersOrOptions &&
+            typeof allowModifiersOrOptions === "object"
+        ) {
+            options = allowModifiersOrOptions;
+            allowModifiers = options.allowModifiers !== false;
+        }
+        this.captureMode = options.captureMode || "default";
 
+        let table =
+            typeof AutoHotPieSettings !== "undefined" &&
+            AutoHotPieSettings &&
+            AutoHotPieSettings.global
+                ? AutoHotPieSettings.global.htmlAhkKeyConversionTable
+                : [];
+        let helpers =
+            typeof AHPHotkeys !== "undefined"
+                ? AHPHotkeys
+                : null;
+
+        if (typeof _keyObj == "string") {
+            let data = helpers
+                ? helpers.hotkeyFromAhkString(_keyObj, table, {
+                      allowModifiers: allowModifiers,
+                  })
+                : null;
+            if (!data) {
+                this.isWin = null;
+                this.isShift = null;
+                this.isCtrl = null;
+                this.isAlt = null;
+                this.keyCode = null;
+                this.displayKeyNoMods = null;
+                this.displayKey = null;
+                this.ahkKey = null;
+                return;
+            }
+            this.isWin = data.isWin;
+            this.isShift = data.isShift;
+            this.isCtrl = data.isCtrl;
+            this.isAlt = data.isAlt;
+            this.keyCode = data.keyCode;
+            this.displayKeyNoMods = data.displayKeyNoMods;
+            this.displayKey = data.displayKey;
+            // Preserve the original string encoding (including legacy case).
             this.ahkKey = _keyObj;
-            if(allowModifiers){
-                this.isWin = this.checkAhkModSymbol("#");
-                this.isShift = this.checkAhkModSymbol("+");
-                this.isCtrl = this.checkAhkModSymbol("^");
-                this.isAlt = this.checkAhkModSymbol("!");
-            } else {
-                this.isWin = false;
-                this.isShift = false;
-                this.isCtrl = false;
-                this.isAlt = false;
+        } else if (_keyObj && "keyCode" in _keyObj) {
+            let data = helpers
+                ? helpers.eventToHotkeyData(_keyObj, table, {
+                      allowModifiers: allowModifiers,
+                      captureMode: this.captureMode,
+                  })
+                : null;
+            if (!data) {
+                this.isWin = null;
+                this.isShift = null;
+                this.isCtrl = null;
+                this.isAlt = null;
+                this.keyCode = null;
+                this.displayKeyNoMods = null;
+                this.displayKey = null;
+                this.ahkKey = null;
+                return;
             }
-            
-            this.keyCode = keyListObj.keyCode
-            this.displayKeyNoMods = keyListObj.displayKey; 
-            this.displayKey = this.processDisplayKeyToFullString(keyListObj.displayKey);        
-          
-        
-        } else if (_keyObj && ("keyCode" in _keyObj)){ //If keyEvent
-            console.log(_keyObj)
-            // let keyConversionObj = keyTableArray.find(x => x.keyCode === keyNumber); 
-            
-            if(allowModifiers){
-                this.isWin = _keyObj.metaKey
-                this.isShift = _keyObj.shiftKey
-                this.isCtrl = _keyObj.ctrlKey
-                this.isAlt = _keyObj.altKey
-            } else {
-                this.isWin = false;
-                this.isShift = false;
-                this.isCtrl = false;
-                this.isAlt = false;
-            } 
-            if (_keyObj.code == "Enter"){
-                this.keyCode = 1
-            } else {
-                this.keyCode = _keyObj.keyCode
-            }
-            
-            // this.displayKeyNoMods = null;
-            // this.displayKey = null;
-            // this.ahkKey = null;
-            this.#refreshHotkeyData();
-
-        // } else if (_keyObj && _keyObj.ahkKey != null){            
+            this.isWin = data.isWin;
+            this.isShift = data.isShift;
+            this.isCtrl = data.isCtrl;
+            this.isAlt = data.isAlt;
+            this.keyCode = data.keyCode;
+            this.displayKeyNoMods = data.displayKeyNoMods;
+            this.displayKey = data.displayKey;
+            this.ahkKey = data.ahkKey;
         } else {
             this.isWin = null;
             this.isShift = null;
@@ -1968,9 +1994,9 @@ class Hotkey {
             this.isAlt = null;
             this.keyCode = null;
             this.displayKeyNoMods = null;
-            this.displayKey = null;         
+            this.displayKey = null;
             this.ahkKey = null;
-        }        
+        }
     }
 
     set winKey(enabled){
@@ -2004,38 +2030,60 @@ class Hotkey {
     get altKey(){
         return this.isAlt;
     }
-       
 
     #refreshHotkeyData(){
-        //This uses modifier states and keyCode to create displayKey, displayKeyNoMode and ahkKey.        
-        let keyListObj = AutoHotPieSettings.global.htmlAhkKeyConversionTable.find(x => x.keyCode === this.keyCode);
-
-        this.displayKeyNoMods = keyListObj.displayKey;
-        
-        //Add modifier keys to display key
-        let displayKeyMods = ""
-        displayKeyMods = (this.isWin) ? displayKeyMods + "Win+" : displayKeyMods;
-        displayKeyMods = (this.isShift) ? displayKeyMods + "Shift+" : displayKeyMods;
-        displayKeyMods = (this.isCtrl) ? displayKeyMods + "Ctrl+" : displayKeyMods;
-        displayKeyMods = (this.isAlt) ? displayKeyMods + "Alt+" : displayKeyMods;
-        this.displayKey = displayKeyMods + keyListObj.displayKey;
-
-        //Add modifier keys to ahk key
-        
-        let ahkMods = "";
-        ahkMods = (this.isWin) ? ahkMods + "#" : ahkMods;
-        ahkMods = (this.isShift) ? ahkMods + "+" : ahkMods;
-        ahkMods = (this.isCtrl) ? ahkMods + "^" : ahkMods;
-        ahkMods = (this.isAlt) ? ahkMods + "!" : ahkMods;
-        this.ahkKey = ahkMods + keyListObj.ahkKey.replace(/[\#\!\^\+]/g,"");
+        let table =
+            typeof AutoHotPieSettings !== "undefined" &&
+            AutoHotPieSettings &&
+            AutoHotPieSettings.global
+                ? AutoHotPieSettings.global.htmlAhkKeyConversionTable
+                : [];
+        if (typeof AHPHotkeys === "undefined") {
+            return;
+        }
+        let data = AHPHotkeys.refreshFromParts(
+            {
+                isWin: this.isWin,
+                isShift: this.isShift,
+                isCtrl: this.isCtrl,
+                isAlt: this.isAlt,
+                keyCode: this.keyCode,
+                ahkKey: this.ahkKey,
+                displayKeyNoMods: this.displayKeyNoMods,
+            },
+            table
+        );
+        this.displayKeyNoMods = data.displayKeyNoMods;
+        this.displayKey = data.displayKey;
+        this.ahkKey = data.ahkKey;
     }
 
-
     checkAhkModSymbol(modSymbol){
-        return this.ahkKey.slice(0,4).includes(modSymbol);        
+        if (typeof AHPHotkeys !== "undefined") {
+            return AHPHotkeys.parseAhkModifiers(this.ahkKey || "")[
+                modSymbol === "#"
+                    ? "isWin"
+                    : modSymbol === "+"
+                      ? "isShift"
+                      : modSymbol === "^"
+                        ? "isCtrl"
+                        : "isAlt"
+            ];
+        }
+        return String(this.ahkKey || "").slice(0, 4).includes(modSymbol);
     }
 
     processDisplayKeyToFullString(displayKey){
+        if (typeof AHPHotkeys !== "undefined") {
+            return (
+                AHPHotkeys.buildDisplayModifiers({
+                    isWin: this.checkAhkModSymbol("#"),
+                    isShift: this.checkAhkModSymbol("+"),
+                    isCtrl: this.checkAhkModSymbol("^"),
+                    isAlt: this.checkAhkModSymbol("!"),
+                }) + displayKey
+            );
+        }
         let returnString = ""
         if (this.checkAhkModSymbol("#")){
             returnString = returnString + "Win+"
