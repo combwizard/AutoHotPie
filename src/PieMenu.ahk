@@ -9,6 +9,7 @@ SetControlDelay, 0	; Changed to 0 upon recommendation of documentation
 
 #Include %A_ScriptDir%\lib\Gdip_All.ahk
 #Include %A_ScriptDir%\lib\GdipHelper.ahk
+#Include %A_ScriptDir%\lib\hotkeys.ahk
 #Include %A_ScriptDir%\lib\BGFunks.ahk
 #Include %A_ScriptDir%\lib\PieFunctions.ahk
 #Include %A_ScriptDir%\lib\Json.ahk
@@ -161,10 +162,12 @@ pieLabel: ;Fixed hotkey overlap "r and ^r", refactor this
 			if (ActiveProfile.pieEnableKey.useEnableKey)
 				pieEnableKey.modOff()
 
+			chordHotkey := ActivePieHotkey
 			blockBareKeys(ActivePieHotkey, hotKeyArray, false)
 
-			;deactivate dummy keys
+			; Wait for the pie chord to release so modifiers do not leak into the action.
 			ActivePieHotkey := ""
+			AHP_WaitForChordRelease(chordHotkey)
 			; msgbox, % funcAddress.label
 			runPieFunction(funcAddress)
 			SetUpGDIP(0, 0, 0, 0) ; To Fix white box in screenshare (https://github.com/dumbeau/AutoHotPie/issues/115)

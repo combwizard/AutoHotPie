@@ -36,6 +36,10 @@ Run before releases. Automate stable rows over time. Issue-informed rows map to 
 - [ ] ESC / cancel restores XButton1 / XButton2 when those were the pie keys
 - [ ] Focus change or unexpected cancel does not leave LMB remapped or blocked
 - [ ] Modifier chords (Ctrl / Alt / Shift) used as pie keys or in Send Key do not leave the modifier stuck down after the action
+- [ ] Non-QWERTY Send Key capture (e.g. AZERTY `ù`, `&`, `é`) stores/sends the pressed glyph, not the QWERTY label
+- [ ] Pie keys `Alt+F1` / `Alt+F2` select an action (Send Key or click) without injecting a leftover Ctrl/Alt into the target app
+
+Automated seams for workstream A: `tests/unit/hotkeys.test.js`, `tests/fixtures/settings/non-qwerty-sendkey.json`, `tests/fixtures/settings/modifier-chord-pie-key.json`, and AHK chord/send builders in `tests/ahk/run-tests.ahk`.
 
 ## Lifecycle
 
