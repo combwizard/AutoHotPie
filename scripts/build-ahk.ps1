@@ -65,8 +65,14 @@ $compile = Start-Process -FilePath $ahk2exe -ArgumentList @(
     "/in", $inputPath,
     "/out", $outputPath,
     "/icon", $iconPath,
-    "/bin", $bin
-) -Wait -PassThru -NoNewWindow
+    "/bin", $bin,
+    "/silent"
+) -PassThru -NoNewWindow
+
+if (-not $compile.WaitForExit(120000)) {
+    try { $compile.Kill() } catch {}
+    throw "Ahk2Exe timed out after 120s"
+}
 
 if ($compile.ExitCode -and $compile.ExitCode -ne 0) {
     throw "Ahk2Exe failed with exit code $($compile.ExitCode)"
