@@ -52,16 +52,24 @@ function loadJSONFile(JSONFile){
 }
 function saveJSONFile(JSONFilePath, JSONData){
   let settingsFile
-  if (JSONFilePath.indexOf('\\') > -1){
+  if (JSONFilePath.indexOf('\\') > -1 || JSONFilePath.indexOf('/') > -1){
     settingsFile = JSONFilePath  
   } else {
     settingsFile = path.join(UserDataFolder, JSONFilePath)
-  }  
-    fs.writeFileSync(path.resolve(settingsFile),JSON.stringify(JSONData,null, "\t"), function(err){
-      if (err) {
-        console.log("Failed to save file.\n" + err)
-      }
-    })
+  }
+  try {
+    if (dataHasSchemaShape(JSONData)) {
+      JSONData.schemaVersion = JSONData.schemaVersion == null ? 1 : JSONData.schemaVersion;
+    }
+    fs.writeFileSync(path.resolve(settingsFile), JSON.stringify(JSONData, null, "\t"), "utf8");
+  } catch (err) {
+    console.error("Failed to save file.\n" + err);
+    throw err;
+  }
+}
+
+function dataHasSchemaShape(data) {
+  return data && typeof data === "object" && ("global" in data || "appProfiles" in data);
 }
 
 
@@ -143,7 +151,16 @@ contextBridge.exposeInMainWorld('win', {
 
 
 contextBridge.exposeInMainWorld('openURL',function(openURL){
-  shell.openExternal(openURL);
+  try {
+    const parsed = new URL(openURL);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      console.error("Blocked non-http(s) URL:", openURL);
+      return;
+    }
+    shell.openExternal(parsed.toString());
+  } catch (err) {
+    console.error("Invalid URL:", openURL, err);
+  }
 })
 
 contextBridge.exposeInMainWorld('updateApp',function(){
@@ -168,10 +185,11 @@ contextBridge.exposeInMainWorld('isPieMenusRunning', function(runAHK){
 contextBridge.exposeInMainWorld('pieMenus', {
   run: async function(runAHK=false){  
     function run_script(command, args, callback) {      
-      var child = child_process.spawn("\"" + command + "\"", args, {
+      var child = child_process.spawn(command, args || [], {
           encoding: 'utf8',
-          shell: true,
-          detached: true
+          shell: false,
+          detached: true,
+          windowsHide: false
       });
 
       console.log(child);
@@ -500,7 +518,7 @@ contextBridge.exposeInMainWorld('electron', {
       saveJSONFile(path.resolve(folderPath, "AHPSettings.json"), settingsData);
       shell.openPath(folderPath);
     } catch (e){
-      alert("Could not create the package at this destination:\n" . folderPath)
+      alert("Could not create the package at this destination:\n" + folderPath)
       return false
     }
     return true
@@ -667,9 +685,7 @@ contextBridge.exposeInMainWorld('getActiveWindowProcess', () => {
   })
 });
 
-contextBridge.exposeInMainWorld('windowManager', windowManager);
-
-
+// Do not expose the full native windowManager object to the renderer.
 
 contextBridge.exposeInMainWorld('menuListener', function(func){
   ipcRenderer.on('menuSelected', function(event, arg){
