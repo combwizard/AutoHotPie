@@ -13,7 +13,7 @@ Issue-informed scenarios map to workstreams in [continuation-plan.md](continuati
 | Suspend/resume | Manual | |
 | Packaged NSIS install | Manual + CI unpacked | |
 | Portable JSON-next-to-script | Manual | Standalone detection |
-| Non-QWERTY keyboard (e.g. AZERTY) | Manual | Send Key / pie key capture must match physical key, not QWERTY label |
+| Non-QWERTY keyboard (e.g. AZERTY) | Manual | Send Key capture uses `vkXX` on glyph mismatch; validate `ù` / `&` / `é` live. Unit coverage in `tests/unit/hotkeys.test.js` |
 | Bluetooth / weak key-up controller | Manual | Prefer activation mode 3; confirm press and release behavior |
 | Macro mouse without key-up (MX Master, Elecom) | Manual | Hover/click modes or XButtons; see README |
 | App focus switching (creative app ↔ other) | Manual | Pies remain selectable; no stuck LMB after cancel |

@@ -41,9 +41,9 @@ These are the next correctness / reliability slices. Ship each as its own PR (or
 |---|---|
 | Upstream | [#177](https://github.com/dumbeau/AutoHotPie/issues/177) sticky modifiers / random Ctrl; [#161](https://github.com/dumbeau/AutoHotPie/issues/161) non-QWERTY Send Key |
 | Boundary | Shared settings contract + editor capture + AHK send path (`src/lib/PieFunctions.ahk`, hotkey helpers) |
-| Fixtures / tests | `tests/fixtures/settings/` (modifier chords, non-QWERTY samples); `tests/unit/` hotkey conversion; optional `tests/ahk/` send-path checks |
-| Acceptance | Manual matrix rows for modifier cleanup + non-QWERTY send; unit/schema tests green |
-| Migration | None unless encoding shape changes — then bump `schemaVersion` per [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Fixtures / tests | `tests/fixtures/settings/modifier-chord-pie-key.json`, `tests/fixtures/settings/non-qwerty-sendkey.json`; `tests/unit/hotkeys.test.js`; AHK builders in `tests/ahk/run-tests.ahk` via `src/lib/hotkeys.ahk` |
+| Acceptance | Manual matrix rows for modifier cleanup + non-QWERTY send; unit/schema/AHK tests green |
+| Migration | None — Send Key may persist additive `vkXX` strings; legacy `^c` remains valid (no `schemaVersion` bump) |
 | Delivery stage | 4 + 6 |
 
 ### B. Fail-safe input cleanup and activation modes — P0 / P1

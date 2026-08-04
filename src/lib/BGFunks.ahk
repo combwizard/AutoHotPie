@@ -1831,6 +1831,10 @@ runPieFunction(functionObj)
 	static lastPieFunctionRanTickCount := 0
 	static lastPieFunctionRan = ""
 
+	; In-menu dispatch can run while the pie chord is still held; wait first.
+	if (ActivePieHotkey != "")
+		AHP_WaitForChordRelease(ActivePieHotkey)
+
 	; selectedRegion := Settings.appProfiles[functionObj[1]].pieKeys[functionObj[2]].pieMenus[functionObj[3]].functions[functionObj[4]+1]	
 	; if functionObj.returnMousePos = 1
 	; 	{
